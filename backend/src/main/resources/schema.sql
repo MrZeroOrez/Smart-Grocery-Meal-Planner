@@ -1,0 +1,10 @@
+CREATE TABLE IF NOT EXISTS app_users(id VARCHAR(36) PRIMARY KEY,email VARCHAR(254) NOT NULL UNIQUE,password_hash VARCHAR(100) NOT NULL,app_role VARCHAR(20) NOT NULL DEFAULT 'CUSTOMER');
+CREATE TABLE IF NOT EXISTS products(id VARCHAR(36) PRIMARY KEY,name VARCHAR(100) NOT NULL,category VARCHAR(40) NOT NULL,ingredient VARCHAR(40) NOT NULL,diet VARCHAR(20) NOT NULL,unit VARCHAR(20) NOT NULL,price DECIMAL(12,2) NOT NULL CHECK(price>0),stock INTEGER NOT NULL CHECK(stock>=0));
+CREATE TABLE IF NOT EXISTS carts(owner_id VARCHAR(36) REFERENCES app_users(id),product_id VARCHAR(36) REFERENCES products(id),quantity INTEGER NOT NULL CHECK(quantity>0),PRIMARY KEY(owner_id,product_id));
+CREATE TABLE IF NOT EXISTS preferences(owner_id VARCHAR(36) PRIMARY KEY REFERENCES app_users(id),diet VARCHAR(20) NOT NULL);
+CREATE TABLE IF NOT EXISTS recipes(id VARCHAR(36) PRIMARY KEY,name VARCHAR(100) NOT NULL,diet VARCHAR(20) NOT NULL,instructions VARCHAR(1000) NOT NULL);
+CREATE TABLE IF NOT EXISTS ingredients(recipe_id VARCHAR(36) REFERENCES recipes(id),ingredient VARCHAR(40),units_per_serving INTEGER NOT NULL CHECK(units_per_serving>0),PRIMARY KEY(recipe_id,ingredient));
+CREATE TABLE IF NOT EXISTS meal_plan(owner_id VARCHAR(36) REFERENCES app_users(id),plan_date VARCHAR(10),slot VARCHAR(10),recipe_id VARCHAR(36) NOT NULL REFERENCES recipes(id),servings INTEGER NOT NULL CHECK(servings>0),PRIMARY KEY(owner_id,plan_date,slot));
+CREATE TABLE IF NOT EXISTS orders(id VARCHAR(36) PRIMARY KEY,owner_id VARCHAR(36) NOT NULL REFERENCES app_users(id),status VARCHAR(20) NOT NULL,total DECIMAL(12,2) NOT NULL,expires_at VARCHAR(40) NOT NULL,request_key VARCHAR(80) NOT NULL,created_at VARCHAR(40) NOT NULL,UNIQUE(owner_id,request_key));
+CREATE TABLE IF NOT EXISTS order_lines(order_id VARCHAR(36) REFERENCES orders(id),product_id VARCHAR(36) REFERENCES products(id),name VARCHAR(100) NOT NULL,quantity INTEGER NOT NULL,price DECIMAL(12,2) NOT NULL,PRIMARY KEY(order_id,product_id));
+CREATE TABLE IF NOT EXISTS meal_imports(owner_id VARCHAR(36) REFERENCES app_users(id),request_key VARCHAR(80),fingerprint VARCHAR(1000) NOT NULL,PRIMARY KEY(owner_id,request_key));
